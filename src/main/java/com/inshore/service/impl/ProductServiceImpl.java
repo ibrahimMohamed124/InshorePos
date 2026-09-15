@@ -1,17 +1,18 @@
 package com.inshore.service.impl;
 
 import com.inshore.mapper.ProductMapper;
+import com.inshore.models.Category;
 import com.inshore.models.Product;
 import com.inshore.models.Store;
 import com.inshore.models.User;
 import com.inshore.payload.dto.ProductDTO;
+import com.inshore.repository.CategoryRepository;
 import com.inshore.repository.ProductRepository;
 import com.inshore.repository.StoreRepository;
 import com.inshore.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,9 +22,10 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
-    public ProductDTO createProduct(ProductDTO productDto, User user) {
+    public ProductDTO createProduct(ProductDTO productDto, User user) throws Exception {
         Store store = storeRepository.findById(
                 productDto.getStoreId()
         ).orElseThrow(
@@ -34,7 +36,11 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("only the store admin can add products to this store");
         }
 
-        Product product = ProductMapper.toEntity(productDto, store);
+        Category category = categoryRepository.findById(productDto.getCategoryId()).orElseThrow(
+                () -> new Exception("Category not found")
+        );
+
+        Product product = ProductMapper.toEntity(productDto, store, category);
 
         return ProductMapper.toDTO(productRepository.save(product));
     }
@@ -58,7 +64,13 @@ public class ProductServiceImpl implements ProductService {
         product.setSellingPrice(productDto.getSellingPrice());
         product.setBrand(productDto.getBrand());
         product.setImage(productDto.getImage());
-        product.setCreatedAt(LocalDateTime.now());
+
+        if (productDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productDto.getCategoryId()).orElseThrow(
+                    () -> new RuntimeException("Category not found")
+            );
+            product.setCategory(category);
+        }
 
         return ProductMapper.toDTO(productRepository.save(product));
     }

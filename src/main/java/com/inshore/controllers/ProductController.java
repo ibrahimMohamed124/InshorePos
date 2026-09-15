@@ -26,7 +26,7 @@ public class ProductController {
     public ResponseEntity<ProductDTO> createProduct(
             @RequestHeader("Authorization") String jwt,
             @RequestBody ProductDTO productDTO
-    ) throws UserException {
+    ) throws Exception {
         User user = userService.getUserFromJwt(jwt);
 
         return ResponseEntity.ok(productService.createProduct(productDTO, user));
