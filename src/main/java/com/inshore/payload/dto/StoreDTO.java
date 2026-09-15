@@ -13,7 +13,7 @@ public class StoreDTO {
 
     private String brand;
 
-    private UserDto storeAdmin;
+    private UserDTO storeAdmin;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

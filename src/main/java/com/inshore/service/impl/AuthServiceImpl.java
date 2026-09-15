@@ -17,7 +17,7 @@ import com.inshore.exceptions.CannotCreateAdminUserException;
 import com.inshore.exceptions.UserAlreadyExistsException;
 import com.inshore.mapper.UserMapper;
 import com.inshore.models.User;
-import com.inshore.payload.dto.UserDto;
+import com.inshore.payload.dto.UserDTO;
 import com.inshore.payload.response.AuthResponse;
 import com.inshore.repository.UserRepository;
 import com.inshore.service.AuthService;
@@ -34,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final CustomUserImplementation customUserImplementation;
 
     @Override
-    public AuthResponse signup(UserDto userDto) {
+    public AuthResponse signup(UserDTO userDto) {
         User user = userRepository.findByEmail(userDto.getEmail());
 
         if (user != null) {
@@ -74,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse login(UserDto userDto) {
+    public AuthResponse login(UserDTO userDto) {
         String email = userDto.getEmail();
         String password = userDto.getPassword();
         Authentication authentication = authenticate(email, password);

@@ -1,12 +1,12 @@
 package com.inshore.mapper;
 
 import com.inshore.models.User;
-import com.inshore.payload.dto.UserDto;
+import com.inshore.payload.dto.UserDTO;
 
 public class UserMapper {
 
-	public static UserDto toDTO(User savedUser) {
-		UserDto userDto = new UserDto();
+	public static UserDTO toDTO(User savedUser) {
+		UserDTO userDto = new UserDTO();
         userDto.setId(savedUser.getId());
         userDto.setUsername(savedUser.getUsername());
         userDto.setEmail(savedUser.getEmail());

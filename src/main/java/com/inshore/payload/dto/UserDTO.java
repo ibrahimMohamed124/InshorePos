@@ -8,7 +8,7 @@ import com.inshore.domain.UserRole;
 import lombok.Data;
 
 @Data 
-public class UserDto {
+public class UserDTO {
 
     private UUID id;
 

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.inshore.exceptions.UserException;
 import com.inshore.mapper.UserMapper;
 import com.inshore.models.User;
-import com.inshore.payload.dto.UserDto;
+import com.inshore.payload.dto.UserDTO;
 import com.inshore.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<UserDto> getUserProfile(
+    public ResponseEntity<UserDTO> getUserProfile(
         @RequestHeader("Authorization") String jwt
     ) throws UserException {
         User user = userService.getUserFromJwt(jwt);
@@ -35,7 +35,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(
+    public ResponseEntity<UserDTO> getUserById(
         @RequestHeader("Authorization") String jwt,
         @PathVariable UUID id
     ) throws UserException {

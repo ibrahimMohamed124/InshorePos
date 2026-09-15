@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.inshore.payload.dto.UserDto;
+import com.inshore.payload.dto.UserDTO;
 import com.inshore.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signupHandler(
-        @RequestBody UserDto userDto
+        @RequestBody UserDTO userDto
     ) {
         return ResponseEntity.ok(
             authService.signup(userDto)
@@ -31,7 +31,7 @@ public class AuthController {
 
         @PostMapping("/login")
     public ResponseEntity<?> loginHandler(
-        @RequestBody UserDto userDto
+        @RequestBody UserDTO userDto
     ) {
         return ResponseEntity.ok(
             authService.login(userDto)
