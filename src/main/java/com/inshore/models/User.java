@@ -5,14 +5,8 @@ import java.util.UUID;
 
 import com.inshore.domain.UserRole;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,6 +30,9 @@ public class User {
 
     @Column(unique = true, nullable = false)
     private String email;
+
+    @ManyToOne
+    private Store store;
 
     @Column(nullable = false)
     private String password;
