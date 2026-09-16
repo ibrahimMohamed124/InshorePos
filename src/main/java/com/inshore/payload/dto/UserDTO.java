@@ -3,11 +3,12 @@ package com.inshore.payload.dto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.inshore.domain.UserRole;
 
 import lombok.Data;
 
-@Data 
+@Data
 public class UserDTO {
 
     private UUID id;
@@ -16,9 +17,15 @@ public class UserDTO {
 
     private String email;
 
+    // accepted on requests, never written back in responses
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private String phone;
+
+    private Long branchId;
+
+    private Long storeId;
 
     private UserRole role;
 
