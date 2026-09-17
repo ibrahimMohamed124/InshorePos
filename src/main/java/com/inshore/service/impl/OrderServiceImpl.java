@@ -215,8 +215,9 @@ public class OrderServiceImpl implements OrderService {
         Order order = findOrderOrThrow(id);
         checkBranchAccess(userService.getCurrentUser(), order.getBranch());
 
-        if (order.getStatus() == OrderStatus.COMPLETED) {
-            throw new IllegalStateException("a completed order cannot be deleted - it is a financial record");
+        if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.REFUNDED) {
+            throw new IllegalStateException(
+                    "a " + order.getStatus() + " order cannot be deleted - it is a financial record");
         }
 
         // Only restock if the order is still PENDING. A CANCELLED order already

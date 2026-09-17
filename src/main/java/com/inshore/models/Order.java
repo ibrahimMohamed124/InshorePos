@@ -12,6 +12,7 @@ import java.util.List;
 @Entity
 @Setter
 @Getter
+@Table(name = "orders")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

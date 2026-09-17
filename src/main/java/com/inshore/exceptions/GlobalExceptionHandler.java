@@ -47,6 +47,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(RefundNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleRefundNotFound(RefundNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiResponse> handleEntityNotFound(EntityNotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());

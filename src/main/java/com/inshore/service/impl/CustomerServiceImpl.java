@@ -51,7 +51,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Customer updateCustomer(Long id, Customer customer) throws Exception {
+    public Customer updateCustomer(Long id, Customer customer) {
         if (id == null) {
             throw new IllegalArgumentException("id is required");
         }
@@ -91,7 +91,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Customer getCustomer(Long id) throws Exception {
+    public Customer getCustomer(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("id is required");
         }
@@ -102,7 +102,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void deleteCustomer(Long id) throws Exception {
+    public void deleteCustomer(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("id is required");
         }
@@ -114,17 +114,17 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<Customer> getAllCustomers() throws Exception {
+    public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
     }
 
     @Override
-    public List<Customer> searchCustomers(String searchText) throws Exception {
+    public List<Customer> searchCustomers(String searchText) {
         if (!StringUtils.hasText(searchText)) {
             return getAllCustomers();
         }
 
-        return customerRepository.findByFullnameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+        return customerRepository.findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
                 searchText.trim(), searchText.trim()
         );
     }
@@ -151,7 +151,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     private void ensureEmailIsFree(String email, Long currentCustomerId) {
         customerRepository.findByEmailIgnoreCase(email).ifPresent(existing -> {
-            if (currentCustomerId == null || !existing.getId().equals(currentCustomerId)) {
+            if (!existing.getId().equals(currentCustomerId)) {
                 throw new IllegalStateException("a customer with this email already exists");
             }
         });
