@@ -1,0 +1,79 @@
+package com.inshore.product.controller;
+
+import java.util.List;
+
+import com.inshore.shared.web.ApiResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.inshore.shared.exception.UserException;
+import com.inshore.user.domain.User;
+import com.inshore.product.dto.ProductDTO;
+import com.inshore.product.service.ProductService;
+import com.inshore.user.service.UserService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/products")
+@RequiredArgsConstructor
+public class ProductController {
+
+    private final ProductService productService;
+    private final UserService userService;
+
+    @PostMapping
+    public ResponseEntity<ProductDTO> createProduct(
+            @RequestHeader("Authorization") String jwt,
+            @RequestBody ProductDTO productDTO
+    ) throws Exception {
+        User user = userService.getUserFromJwt(jwt);
+
+        return ResponseEntity.ok(productService.createProduct(productDTO, user));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDTO> updateProduct(
+            @RequestHeader("Authorization") String jwt,
+            @PathVariable Long id,
+            @RequestBody ProductDTO productDTO
+    ) throws UserException {
+        User user = userService.getUserFromJwt(jwt);
+
+        return ResponseEntity.ok(productService.updateProduct(id, productDTO, user));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse> deleteProduct(
+            @RequestHeader("Authorization") String jwt,
+            @PathVariable Long id
+    ) throws UserException {
+        User user = userService.getUserFromJwt(jwt);
+
+        productService.deleteProduct(id, user);
+
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage("Product deleted successfully");
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProducts());
+    }
+
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<List<ProductDTO>> getProductsByStoreId(
+            @PathVariable Long storeId
+    ) {
+        return ResponseEntity.ok(productService.getProductsByStoreId(storeId));
+    }
+
+    @GetMapping("/store/{storeId}/search")
+    public ResponseEntity<List<ProductDTO>> searchByKeyword(
+            @PathVariable Long storeId,
+            @RequestParam String keyword
+    ) {
+        return ResponseEntity.ok(productService.searchByKeyword(storeId, keyword));
+    }
+}
