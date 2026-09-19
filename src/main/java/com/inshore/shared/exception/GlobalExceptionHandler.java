@@ -4,6 +4,7 @@ import com.inshore.customer.exception.CustomerNotFoundException;
 import com.inshore.inventory.exception.InsufficientStockException;
 import com.inshore.order.exception.OrderNotFoundException;
 import com.inshore.refund.exception.RefundNotFoundException;
+import com.inshore.shift.exception.ShiftReportNotFoundException;
 import com.inshore.shared.web.ApiResponse;
 import com.inshore.user.exception.CannotCreateAdminUserException;
 import com.inshore.user.exception.UserAlreadyExistsException;
@@ -55,6 +56,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RefundNotFoundException.class)
     public ResponseEntity<ApiResponse> handleRefundNotFound(RefundNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(ShiftReportNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleShiftReportNotFound(ShiftReportNotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 

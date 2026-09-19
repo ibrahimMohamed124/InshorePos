@@ -9,11 +9,22 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    List<Product> findByStoreId(Long storeId);
+    // ProductMapper#toDTO reads both store and category (both @ManyToOne,
+    // EAGER by default) - fetch them in the same query instead of one
+    // extra SELECT each per product.
+    @Query("""
+            SELECT p FROM Product p
+            LEFT JOIN FETCH p.store
+            LEFT JOIN FETCH p.category
+            WHERE p.store.id = :storeId
+            """)
+    List<Product> findByStoreId(@Param("storeId") Long storeId);
 
     @Query("""
         SELECT p
         FROM Product p
+        LEFT JOIN FETCH p.store
+        LEFT JOIN FETCH p.category
         WHERE p.store.id = :storeId
           AND (
               LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))

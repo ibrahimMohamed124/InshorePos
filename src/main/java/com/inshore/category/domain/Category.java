@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_category_store_id", columnList = "store_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor

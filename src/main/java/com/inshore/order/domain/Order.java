@@ -1,9 +1,8 @@
 package com.inshore.order.domain;
 
 import com.inshore.branch.domain.Branch;
+
 import com.inshore.customer.domain.Customer;
-import com.inshore.order.domain.OrderStatus;
-import com.inshore.order.domain.PaymentType;
 import com.inshore.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,7 +14,14 @@ import java.util.List;
 @Entity
 @Setter
 @Getter
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+        @Index(name = "idx_orders_branch_id", columnList = "branch_id"),
+        @Index(name = "idx_orders_branch_created_at", columnList = "branch_id, created_at"),
+        @Index(name = "idx_orders_customer_id", columnList = "customer_id"),
+        @Index(name = "idx_orders_cashier_id", columnList = "cashier_id"),
+        @Index(name = "idx_orders_cashier_created_at", columnList = "cashier_id, created_at"),
+        @Index(name = "idx_orders_status", columnList = "status")
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

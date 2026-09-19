@@ -29,9 +29,9 @@ public class RefundDTO {
     // trusted as the final amount (see RefundServiceImpl#createRefund).
     private Double amount;
 
-    // Shift reports aren't wired up yet - ShiftReport has no repository/service
-    // to resolve "the cashier's current shift" from. Always null for now; kept
-    // so refunds can be attributed to a shift once that feature exists.
+    // Always derived server-side from the cashier's open shift (if any) when
+    // the refund is created - see RefundServiceImpl#createRefund. Null when
+    // the cashier had no open shift at the time.
     private Long shiftReportId;
 
     // cashier/branch are always derived server-side - from the authenticated

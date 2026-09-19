@@ -2,13 +2,16 @@ package com.inshore.product.domain;
 
 import com.inshore.category.domain.Category;
 import com.inshore.store.domain.Store;
-import com.inshore.store.domain.StoreStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_product_store_id", columnList = "store_id"),
+        @Index(name = "idx_product_category_id", columnList = "category_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -41,7 +44,7 @@ public class Product {
     private Category category;
 
     @ManyToOne
-     private Store store;
+    private Store store;
 
     private LocalDateTime createdAt;
 

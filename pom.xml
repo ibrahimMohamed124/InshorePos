@@ -79,6 +79,47 @@
     		<scope>runtime</scope>
 		</dependency>
 
+		<!-- Source: https://mvnrepository.com/artifact/com.bucket4j/bucket4j_jdk17-core -->
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j_jdk17-core</artifactId>
+			<version>8.19.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Source: https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-redis</artifactId>
+			<version>4.1.1</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Bucket4j's Lettuce-backed distributed proxy manager: talks to Redis directly via the
+		     raw Lettuce client (RedisClient), NOT through spring-data-redis's RedisConnectionFactory.
+		     The bucket4j maintainers explicitly dropped spring-data-redis support because its default
+		     serializers mangle the raw byte[] state Bucket4j needs (see bucket4j/bucket4j#322), so this
+		     module keeps its own dedicated Lettuce connection instead of reusing the app's Redis beans. -->
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j_jdk17-lettuce</artifactId>
+			<version>8.19.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Lettuce client itself. No <version> pinned on purpose: spring-boot-starter-parent's BOM
+		     already manages a Lettuce version compatible with this Boot release. -->
+		<dependency>
+			<groupId>io.lettuce</groupId>
+			<artifactId>lettuce-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j_jdk17-redis-common</artifactId>
+			<version>8.19.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>

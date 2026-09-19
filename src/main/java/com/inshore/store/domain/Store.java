@@ -1,6 +1,5 @@
 package com.inshore.store.domain;
 
-import com.inshore.store.domain.StoreStatus;
 import com.inshore.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,6 +7,9 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_store_store_admin_id", columnList = "store_admin_id", unique = true)
+})
 @Getter
 @Setter
 @NoArgsConstructor

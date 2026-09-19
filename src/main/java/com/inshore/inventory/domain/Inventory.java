@@ -8,6 +8,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_inventory_branch_id", columnList = "branch_id"),
+        @Index(name = "idx_inventory_product_branch", columnList = "product_id, branch_id", unique = true)
+})
 @Setter
 @Getter
 @AllArgsConstructor

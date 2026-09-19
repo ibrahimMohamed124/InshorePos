@@ -4,9 +4,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.inshore.branch.domain.Branch;
-import com.inshore.store.domain.Store;
-import com.inshore.user.domain.UserRole;
 
+import com.inshore.store.domain.Store;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -16,7 +15,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_users_store_id", columnList = "store_id"),
+        @Index(name = "idx_users_branch_id", columnList = "branch_id"),
+        @Index(name = "idx_users_store_role", columnList = "store_id, role"),
+        @Index(name = "idx_users_branch_role", columnList = "branch_id, role")
+})
 @Getter
 @Setter
 @NoArgsConstructor

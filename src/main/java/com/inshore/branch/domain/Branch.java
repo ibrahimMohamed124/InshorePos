@@ -5,12 +5,15 @@ import com.inshore.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_branch_store_id", columnList = "store_id"),
+        @Index(name = "idx_branch_manager_id", columnList = "manager_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -55,6 +58,5 @@ public class Branch {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 
 }

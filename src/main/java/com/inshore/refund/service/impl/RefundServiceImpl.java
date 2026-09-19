@@ -14,6 +14,8 @@ import com.inshore.branch.repository.BranchRepository;
 import com.inshore.order.repository.OrderRepository;
 import com.inshore.refund.repository.RefundRepository;
 import com.inshore.refund.service.RefundService;
+import com.inshore.shift.domain.ShiftReport;
+import com.inshore.shift.repository.ShiftReportRepository;
 import com.inshore.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ public class RefundServiceImpl implements RefundService {
     private final RefundRepository refundRepository;
     private final OrderRepository orderRepository;
     private final BranchRepository branchRepository;
+    private final ShiftReportRepository shiftReportRepository;
     private final UserService userService;
 
     @Override
@@ -58,11 +61,6 @@ public class RefundServiceImpl implements RefundService {
         User currentUser = userService.getCurrentUser();
         checkBranchAccess(currentUser, order.getBranch());
 
-        // Only a completed (paid) order has money to give back - a pending order
-        // was never charged, and a cancelled order already had its stock
-        // returned via OrderServiceImpl#updateOrderStatus with nothing collected.
-        // A previously (partially) refunded order is allowed back in here so a
-        // second partial refund can be issued against what's still left.
         if (order.getStatus() != OrderStatus.COMPLETED && order.getStatus() != OrderStatus.REFUNDED) {
             throw new IllegalStateException(
                     "only a completed order can be refunded, this order is " + order.getStatus());
@@ -78,37 +76,34 @@ public class RefundServiceImpl implements RefundService {
             throw new IllegalStateException("this order has already been fully refunded");
         }
 
-        // No amount supplied means "refund what's left" - defaulting it this way
-        // (rather than requiring the client to compute and send the exact
-        // remaining balance) also avoids rounding drift between what the client
-        // thinks is owed and what the server has actually tracked.
         double amount = refundDTO.getAmount() != null ? refundDTO.getAmount() : remainingRefundable;
         if (amount > remainingRefundable) {
             throw new IllegalArgumentException(
                     "refund amount exceeds the order's remaining refundable balance of " + remainingRefundable);
         }
 
+        // ShiftReport now has a repository/service (see ShiftReportServiceImpl) -
+        // attribute this refund to the cashier's open shift when they have one,
+        // instead of always leaving it null. Still optional: a refund processed
+        // with no open shift (e.g. by an admin outside shift hours) is allowed.
+        ShiftReport openShift = shiftReportRepository
+                .findTopByCashierAndShiftEndIsNullOrderByShiftStartDesc(currentUser)
+                .orElse(null);
+
         Refund refund = Refund.builder()
                 .order(order)
                 .reason(refundDTO.getReason())
                 .amount(amount)
-                // Refund through the same method the order was paid with by
-                // default; a client can override (e.g. store policy is cash
-                // refunds only) but the payment type is never left unset.
                 .paymentType(refundDTO.getPaymentType() != null
                         ? refundDTO.getPaymentType()
                         : order.getPaymentType())
                 .cashier(currentUser)
                 .branch(order.getBranch())
-                // Shift reports aren't wired up yet - see RefundDTO#shiftReportId.
-                .shiftReport(null)
+                .shiftReport(openShift)
                 .build();
 
         Refund savedRefund = refundRepository.save(refund);
 
-        // Flip the order over to REFUNDED once nothing is left to give back, so
-        // order listings/reports can tell a refunded sale apart from an
-        // ordinary completed one without re-summing every refund each time.
         if (amount >= remainingRefundable) {
             order.setStatus(OrderStatus.REFUNDED);
             orderRepository.save(order);
@@ -119,10 +114,7 @@ public class RefundServiceImpl implements RefundService {
 
     @Override
     public List<RefundDTO> getAllRefunds() throws Exception {
-        // Every other lookup here is scoped to a branch/cashier/order the
-        // caller already has access to; an unscoped "everything" listing spans
-        // every store, so restrict it the same way SecurityConfig reserves
-        // /api/super-admin/** for ROLE_ADMIN.
+
         User currentUser = userService.getCurrentUser();
         if (currentUser.getRole() != UserRole.ROLE_ADMIN) {
             throw new AccessDeniedException("only an admin can list every refund");
@@ -145,9 +137,6 @@ public class RefundServiceImpl implements RefundService {
             throw new EntityNotFoundException("cashier not found");
         }
 
-        // a cashier can always see their own refunds; viewing someone else's
-        // requires branch-level authority (same rule as
-        // OrderServiceImpl#getOrderByCashier).
         if (!currentUser.getId().equals(cashierId)) {
             checkBranchAccess(currentUser, cashier.getBranch());
         }
@@ -163,9 +152,6 @@ public class RefundServiceImpl implements RefundService {
             throw new IllegalArgumentException("shiftReportId is required");
         }
 
-        // ShiftReport has no repository/service yet (it's an empty stub), so
-        // its own branch/cashier can't be looked up to authorize against
-        // up front - authorize per refund instead, using each refund's branch.
         User currentUser = userService.getCurrentUser();
 
         return refundRepository.findByShiftReportId(shiftReportId).stream()
@@ -232,10 +218,6 @@ public class RefundServiceImpl implements RefundService {
         User currentUser = userService.getCurrentUser();
         checkBranchAccess(currentUser, refund.getBranch());
 
-        // A refund is a correction to a financial record a cashier already
-        // issued - letting that same cashier delete it would let them quietly
-        // erase evidence of a bad or fraudulent refund. Reversing one requires
-        // branch-manager tier or above.
         boolean canDelete = currentUser.getRole() == UserRole.ROLE_ADMIN
                 || currentUser.getRole() == UserRole.ROLE_STORE_ADMIN
                 || currentUser.getRole() == UserRole.ROLE_STORE_MANAGER
@@ -247,9 +229,6 @@ public class RefundServiceImpl implements RefundService {
         Order order = refund.getOrder();
         refundRepository.delete(refund);
 
-        // If removing this refund means the order is no longer fully refunded,
-        // put it back to COMPLETED rather than leaving it permanently marked
-        // REFUNDED for money it's actually still owed for.
         if (order != null && order.getStatus() == OrderStatus.REFUNDED) {
             double remainingRefunded = refundRepository.findByOrderId(order.getId()).stream()
                     .mapToDouble(r -> r.getAmount() == null ? 0d : r.getAmount())
@@ -270,8 +249,6 @@ public class RefundServiceImpl implements RefundService {
                 .orElseThrow(() -> new RefundNotFoundException("refund not found"));
     }
 
-    // Mirrors OrderServiceImpl's branch-access rules - a refund is only ever
-    // visible/actionable by people who could also see the order it refunds.
     private void checkBranchAccess(User user, Branch branch) {
         if (!hasBranchAccess(user, branch)) {
             throw new AccessDeniedException("you don't have permission to access refunds for this branch");
