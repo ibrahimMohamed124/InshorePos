@@ -92,7 +92,7 @@ public class DataSeeder implements CommandLineRunner {
         List<Product> products = seedProducts(store, categories);
         seedInventory(products, branches);
 
-        List<Customer> customers = seedCustomers();
+        List<Customer> customers = seedCustomers(store);
 
         seedOrders(downtown, uptown, downtownCashier, uptownCashier, products, customers);
 
@@ -150,7 +150,7 @@ public class DataSeeder implements CommandLineRunner {
         User uptownManager = userRepository.save(
                 newUser("uptown.manager", "uptown.manager@inshore.test", "+201000000003",
                         UserRole.ROLE_BRANCH_MANAGER));
-        uptownManager.setStore(store);
+        uptownManager.setStore(store);         
 
         Branch downtown = Branch.builder()
                 .name("Downtown Branch")
@@ -268,18 +268,18 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 
-    private List<Customer> seedCustomers() {
+    private List<Customer> seedCustomers(Store store) {
         Customer sara = Customer.builder()
                 .fullName("Sara Ahmed").email("sara.ahmed@example.com").phone("+201111111111")
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).store(store)
                 .build();
         Customer omar = Customer.builder()
                 .fullName("Omar Khaled").email("omar.khaled@example.com").phone("+201222222222")
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).store(store)
                 .build();
         Customer layla = Customer.builder()
                 .fullName("Layla Hassan").email("layla.hassan@example.com").phone("+201333333333")
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).store(store)
                 .build();
 
         return customerRepository.saveAll(List.of(sara, omar, layla));
@@ -345,14 +345,16 @@ public class DataSeeder implements CommandLineRunner {
                 .order(order)
                 .product(product)
                 .quantity(quantity)
-                .price(product.getSellingPrice())
+                // OrderItem.price is the LINE total (unit price x quantity), exactly as
+                // OrderServiceImpl stores it for real sales - so reports and refunds add up.
+                .price(product.getSellingPrice() * quantity)
                 .build();
         order.getItems().add(item);
     }
 
     private double totalOf(Order order) {
         return order.getItems().stream()
-                .mapToDouble(i -> i.getPrice() * i.getQuantity())
+                .mapToDouble(OrderItem::getPrice)
                 .sum();
     }
 }
